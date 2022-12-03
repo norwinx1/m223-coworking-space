@@ -15,7 +15,7 @@ import ch.zli.m223.domain.entity.State;
 import ch.zli.m223.domain.exception.ConflictException;
 
 @ApplicationScoped
-public class BookingsService {
+public class BookingService {
     @Inject
     private EntityManager entityManager;
 
@@ -58,18 +58,19 @@ public class BookingsService {
     }
 
     private void checkDate(Booking booking) throws ConflictException {
-        Optional<Booking> optional = entityManager
+        List<Booking> bookings = entityManager
                 .createQuery(
-                        "SELECT b FROM Booking b WHERE b.date = :date AND (b.bookingDuration = :bookingDuration1 OR b.bookingDuration = :bookingDuration2)",
+                        "SELECT b FROM Booking b WHERE b.date = :date",
                         Booking.class)
                 .setParameter("date", booking.getDate())
-                .setParameter("bookingDuration1", booking.getBookingDuration())
-                .setParameter("bookingDuration2", BookingDuration.FULLDAY)
                 .getResultStream()
-                .findFirst();
-        if (!optional.isPresent()) {
+                .filter(x -> x.getBookingDuration() == booking.getBookingDuration()
+                        || x.getBookingDuration() == BookingDuration.FULLDAY
+                        || booking.getBookingDuration() == BookingDuration.FULLDAY)
+                .toList();
+        if (bookings.size() == 0 || (bookings.size() == 1 && bookings.get(0).getId() == booking.getId())) {
             booking.setState(State.PENDING);
-        } else if (optional.get().getId() != booking.getId()) {
+        } else {
             booking.setState(State.DENIED);
             throw new ConflictException(
                     "Booking collides with date from another booking. Your booking has automatically been denied.");

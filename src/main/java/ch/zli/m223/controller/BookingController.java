@@ -25,19 +25,19 @@ import ch.zli.m223.domain.entity.ApplicationUser;
 import ch.zli.m223.domain.entity.Booking;
 import ch.zli.m223.domain.exception.ConflictException;
 import ch.zli.m223.service.ApplicationUserService;
-import ch.zli.m223.service.BookingsService;
+import ch.zli.m223.service.BookingService;
 
 @Path("/bookings")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Tag(name = "Bookings", description = "Handling of bookings")
 @RolesAllowed({ "ADMIN", "MEMBER" })
-public class BookingsController {
+public class BookingController {
     @Inject
     JsonWebToken jwt;
 
     @Inject
-    BookingsService bookingsService;
+    BookingService bookingsService;
 
     @Inject
     ApplicationUserService applicationUserService;

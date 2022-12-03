@@ -14,7 +14,7 @@ import io.quarkus.test.junit.QuarkusTest;
 public class SessionControllerTest {
 
     @Test
-    @Order(1)
+    @Order(0)
     void testLoginEndpointWithCorrectCredentials() {
         Credentials credentials = new Credentials();
         credentials.setEmail("max.rüdiger@example.com");
@@ -24,7 +24,7 @@ public class SessionControllerTest {
     }
 
     @Test
-    @Order(2)
+    @Order(1)
     void testLoginEndpointWithIncorrectCredentials() {
         Credentials credentials = new Credentials();
         credentials.setEmail("max.rüdiger@example.com");
@@ -34,7 +34,7 @@ public class SessionControllerTest {
     }
 
     @Test
-    @Order(3)
+    @Order(2)
     void testRegisterEndpointWithNotUniqueEmail() {
         given().header("Content-type", "application/json").body(setUser()).when().post("/register").then()
                 .statusCode(409);
