@@ -6,9 +6,11 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 
 import ch.zli.m223.domain.entity.ApplicationUser;
+import ch.zli.m223.domain.exception.EmailNotUniqueException;
 
 @ApplicationScoped
 public class ApplicationUserService {
@@ -16,9 +18,13 @@ public class ApplicationUserService {
     private EntityManager entityManager;
 
     @Transactional
-    public ApplicationUser createApplicationUser(ApplicationUser user) {
-        entityManager.persist(user);
-        return user;
+    public ApplicationUser createApplicationUser(ApplicationUser user) throws EmailNotUniqueException {
+        try {
+            entityManager.persist(user);
+            return user;
+        } catch (PersistenceException e) {
+            throw new EmailNotUniqueException("Email already in use");
+        }
     }
 
     @Transactional
@@ -50,6 +56,6 @@ public class ApplicationUserService {
     }
 
     public Long count() {
-        return entityManager.createQuery("COUNT * FROM ApplicationUser", Long.class).getSingleResult();
+        return entityManager.createQuery("SELECT COUNT(id) FROM ApplicationUser u", Long.class).getSingleResult();
     }
 }

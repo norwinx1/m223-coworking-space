@@ -28,7 +28,7 @@ public class ApplicationUser {
     @Column
     private String lastname;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -140,5 +140,4 @@ public class ApplicationUser {
         this.bookings = bookings;
     }
 
-    
 }

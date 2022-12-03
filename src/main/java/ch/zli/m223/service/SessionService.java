@@ -17,7 +17,7 @@ public class SessionService {
     @Inject
     PasswordService passwordService;
 
-    public String checkCredentials(ApplicationUser applicationUser) {
+    public String checkCredentials(ApplicationUser applicationUser) throws SecurityException {
         Optional<ApplicationUser> user = userService.findByEmail(applicationUser.getEmail());
         if (user.isPresent() && user.get().getPassword().equals(passwordService.hashPassword(
                 applicationUser.getPassword()))) {
