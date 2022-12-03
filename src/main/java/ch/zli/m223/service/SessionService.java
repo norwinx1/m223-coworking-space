@@ -7,6 +7,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import ch.zli.m223.domain.entity.ApplicationUser;
+import ch.zli.m223.domain.model.Credentials;
 import io.smallrye.jwt.build.Jwt;
 
 @ApplicationScoped
@@ -17,10 +18,10 @@ public class SessionService {
     @Inject
     PasswordService passwordService;
 
-    public String checkCredentials(ApplicationUser applicationUser) throws SecurityException {
-        Optional<ApplicationUser> user = userService.findByEmail(applicationUser.getEmail());
+    public String checkCredentials(Credentials credentials) throws SecurityException {
+        Optional<ApplicationUser> user = userService.findByEmail(credentials.getEmail());
         if (user.isPresent() && user.get().getPassword().equals(passwordService.hashPassword(
-                applicationUser.getPassword()))) {
+                credentials.getPassword()))) {
             String role = user.get().getRole().name();
             String token = Jwt.issuer("https://coworking-space.example.com")
                     .upn(user.get().getEmail())

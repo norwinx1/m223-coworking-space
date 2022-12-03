@@ -10,7 +10,7 @@ import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 
 import ch.zli.m223.domain.entity.ApplicationUser;
-import ch.zli.m223.domain.exception.EmailNotUniqueException;
+import ch.zli.m223.domain.exception.ConflictException;
 
 @ApplicationScoped
 public class ApplicationUserService {
@@ -18,12 +18,12 @@ public class ApplicationUserService {
     private EntityManager entityManager;
 
     @Transactional
-    public ApplicationUser createApplicationUser(ApplicationUser user) throws EmailNotUniqueException {
+    public ApplicationUser createApplicationUser(ApplicationUser user) throws ConflictException {
         try {
             entityManager.persist(user);
             return user;
         } catch (PersistenceException e) {
-            throw new EmailNotUniqueException("Email already in use");
+            throw new ConflictException("Email already in use");
         }
     }
 

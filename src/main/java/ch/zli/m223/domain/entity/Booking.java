@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.hibernate.annotations.Fetch;
@@ -24,9 +25,11 @@ public class Booking {
     private State state;
 
     @Column(nullable = false)
+    @NotNull
     private LocalDate date;
 
     @Column(nullable = false)
+    @NotNull
     private BookingDuration bookingDuration;
 
     @ManyToOne(optional = false)
@@ -103,5 +106,4 @@ public class Booking {
         this.applicationUser = applicationUser;
     }
 
-    
 }

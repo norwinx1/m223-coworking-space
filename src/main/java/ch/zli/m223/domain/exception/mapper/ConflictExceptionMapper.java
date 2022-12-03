@@ -5,14 +5,14 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import ch.zli.m223.domain.exception.EmailNotUniqueException;
+import ch.zli.m223.domain.exception.ConflictException;
 import ch.zli.m223.domain.model.ApiError;
 
 @Provider
-public class EmailNotUniqueExceptionMapper implements ExceptionMapper<EmailNotUniqueException> {
+public class ConflictExceptionMapper implements ExceptionMapper<ConflictException> {
 
     @Override
-    public Response toResponse(EmailNotUniqueException exception) {
+    public Response toResponse(ConflictException exception) {
         ApiError apiError = new ApiError(Status.CONFLICT, exception.getMessage());
         return Response.status(Status.CONFLICT).entity(apiError).build();
     }
