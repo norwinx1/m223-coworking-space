@@ -32,4 +32,76 @@ public class Booking {
     @ManyToOne(optional = false)
     @Fetch(FetchMode.JOIN)
     private ApplicationUser applicationUser;
+
+    /**
+     * @return the id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * @param id the id to set
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * @return the state
+     */
+    public State getState() {
+        return state;
+    }
+
+    /**
+     * @param state the state to set
+     */
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    /**
+     * @return the date
+     */
+    public LocalDate getDate() {
+        return date;
+    }
+
+    /**
+     * @param date the date to set
+     */
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    /**
+     * @return the bookingDuration
+     */
+    public BookingDuration getBookingDuration() {
+        return bookingDuration;
+    }
+
+    /**
+     * @param bookingDuration the bookingDuration to set
+     */
+    public void setBookingDuration(BookingDuration bookingDuration) {
+        this.bookingDuration = bookingDuration;
+    }
+
+    /**
+     * @return the applicationUser
+     */
+    public ApplicationUser getApplicationUser() {
+        return applicationUser;
+    }
+
+    /**
+     * @param applicationUser the applicationUser to set
+     */
+    public void setApplicationUser(ApplicationUser applicationUser) {
+        this.applicationUser = applicationUser;
+    }
+
+    
 }
