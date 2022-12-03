@@ -29,7 +29,10 @@ public class ApplicationUserService {
 
     @Transactional
     public void deleteApplicationUser(Long id) {
-        entityManager.remove(entityManager.find(ApplicationUser.class, id));
+        entityManager
+                .createQuery("DELETE FROM ApplicationUser u WHERE u.id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
     }
 
     public List<ApplicationUser> findAll() {
