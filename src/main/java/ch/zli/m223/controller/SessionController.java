@@ -7,10 +7,12 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
 
 import ch.zli.m223.domain.entity.ApplicationUser;
+import ch.zli.m223.domain.model.ApiError;
 import ch.zli.m223.service.SessionService;
 
 @Path("/login")
@@ -28,7 +30,9 @@ public class SessionController {
                     .header("Authorization", token)
                     .build().toResponse();
         } catch (SecurityException e) {
-            return ResponseBuilder.create(401, e.getMessage()).build().toResponse();
+            return ResponseBuilder.ok(new ApiError(
+                    e.getMessage()), MediaType.APPLICATION_JSON).status(Status.UNAUTHORIZED).build()
+                    .toResponse();
         }
     }
 }

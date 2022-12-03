@@ -14,9 +14,13 @@ public class SessionService {
     @Inject
     ApplicationUserService userService;
 
+    @Inject
+    PasswordService passwordService;
+
     public String checkCredentials(ApplicationUser applicationUser) {
         Optional<ApplicationUser> user = userService.findByEmail(applicationUser.getEmail());
-        if (user.isPresent() && user.get().getPassword().equals(applicationUser.getPassword())) {
+        if (user.isPresent() && user.get().getPassword().equals(passwordService.hashPassword(
+                applicationUser.getPassword()))) {
             String role = user.get().getRole().name();
             String token = Jwt.issuer("https://coworking-space.example.com")
                     .upn(user.get().getEmail())
