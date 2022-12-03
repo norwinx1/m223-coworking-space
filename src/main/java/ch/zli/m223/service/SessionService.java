@@ -1,6 +1,8 @@
 package ch.zli.m223.service;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -25,7 +27,7 @@ public class SessionService {
             String role = user.get().getRole().name();
             String token = Jwt.issuer("https://coworking-space.example.com")
                     .upn(user.get().getEmail())
-                    .groups(role)
+                    .groups(new HashSet<>(Arrays.asList(role)))
                     .expiresIn(Duration.ofHours(24))
                     .sign();
             return token;

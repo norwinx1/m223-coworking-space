@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
 
 import ch.zli.m223.domain.entity.ApplicationUser;
@@ -23,6 +24,10 @@ import ch.zli.m223.service.ApplicationUserService;
 import ch.zli.m223.service.SessionService;
 
 @Path("/")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@Tag(name = "Session", description = "Handling of the session")
+@PermitAll
 public class SessionController {
     @Inject
     SessionService sessionService;
@@ -32,9 +37,6 @@ public class SessionController {
 
     @POST
     @Path("login")
-    @PermitAll
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Valid
     @Operation(summary = "Login with email and password", description = "If email and password are correct a JWT token is returned for further authenticated requests.")
     @APIResponses(value = {
@@ -50,9 +52,6 @@ public class SessionController {
 
     @POST
     @Path("register")
-    @PermitAll
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Valid
     @Operation(summary = "Register a new user", description = "Register a new user with firstname, lastname, email and password. The first registered user is automatically assigned the role admin. All further users wil have the role member.")
     @APIResponses(value = {
