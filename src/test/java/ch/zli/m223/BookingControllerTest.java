@@ -1,8 +1,11 @@
 package ch.zli.m223;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.containsString;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -136,6 +139,22 @@ public class BookingControllerTest {
     void testGetStateEndpoint() {
         given().when().get("/bookings/state/1").then()
                 .statusCode(403);
+    }
+
+    @Test
+    @Order(11)
+    void testGetAvailableDatesEndpoint() {
+        Map<LocalDate, BookingDuration> dates = new HashMap<>();
+        for (int i = 0; i < 30; i++) {
+            dates.put(LocalDate.now().plusDays(i), BookingDuration.FULLDAY);
+        }
+        // See also TestDataService
+        dates.remove(LocalDate.now());
+        dates.remove(LocalDate.now().plusDays(5));
+
+        given().when().get("/bookings/available-dates").then()
+                .statusCode(200)
+                .body(containsString(dates.get(LocalDate.now().plusDays(1)).toString()));
     }
 
     // TODO Add last endpoints

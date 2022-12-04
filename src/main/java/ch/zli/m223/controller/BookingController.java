@@ -26,7 +26,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import antlr.collections.List;
 import ch.zli.m223.domain.entity.ApplicationUser;
 import ch.zli.m223.domain.entity.Booking;
 import ch.zli.m223.domain.entity.BookingDuration;

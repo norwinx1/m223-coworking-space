@@ -1,6 +1,8 @@
 package ch.zli.m223.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,15 +81,42 @@ public class BookingService {
     }
 
     public Map<LocalDate, BookingDuration> getAvailableDates() {
-        // TODO MORNING und NOON bei gleichem Datum rausfiltern
+        Map<LocalDate, BookingDuration> dates = new HashMap<>();
+        for (int i = 0; i < 30; i++) {
+            dates.put(LocalDate.now().plusDays(i), BookingDuration.FULLDAY);
+        }
+
+        List<LocalDate> alreadyClearedDates = new ArrayList<>();
+
         List<Booking> bookings = entityManager
                 .createQuery(
-                        "SELECT b FROM Booking b WHERE b.bookingDuration != :bookingDuration AND b.date < :date",
+                        "SELECT b FROM Booking b WHERE b.date <= :date1 AND b.date >= :date2 AND b.state != :state",
                         Booking.class)
-                .setParameter("bookingDuration", BookingDuration.FULLDAY)
-                .setParameter("date", LocalDate.now().plusDays(30))
+                .setParameter("date1", LocalDate.now().plusDays(30))
+                .setParameter("date2", LocalDate.now())
+                .setParameter("state", State.CANCELED)
                 .getResultStream()
                 .toList();
-        return null;
+
+        bookings.forEach(x -> {
+            BookingDuration duration = dates.get(x.getDate());
+            if (!alreadyClearedDates.contains(x.getDate())) {
+                swapDurationOrRemove(duration, x, dates);
+                alreadyClearedDates.add(x.getDate());
+            } else {
+                dates.remove(x.getDate());
+            }
+        });
+
+        return dates;
+    }
+
+    private void swapDurationOrRemove(BookingDuration durationA, Booking booking,
+            Map<LocalDate, BookingDuration> dates) {
+        switch (booking.getBookingDuration()) {
+            case MORNING -> durationA = BookingDuration.NOON;
+            case NOON -> durationA = BookingDuration.MORNING;
+            case FULLDAY -> dates.remove(booking.getDate());
+        }
     }
 }

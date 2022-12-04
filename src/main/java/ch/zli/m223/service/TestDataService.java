@@ -66,17 +66,24 @@ public class TestDataService {
 
         Booking booking2 = new Booking();
         booking2.setApplicationUser(applicationUser2);
-        booking2.setBookingDuration(BookingDuration.MORNING);
-        booking2.setDate(LocalDate.now().minusDays(1));
+        booking2.setBookingDuration(BookingDuration.FULLDAY);
+        booking2.setDate(LocalDate.now().plusDays(1));
         booking2.setState(State.CANCELED);
         entityManager.persist(booking2);
 
         Booking booking3 = new Booking();
         booking3.setApplicationUser(applicationUser3);
         booking3.setBookingDuration(BookingDuration.NOON);
-        booking3.setDate(LocalDate.now().minusDays(1));
+        booking3.setDate(LocalDate.now().plusDays(5));
         booking3.setState(State.ACCEPTED);
         entityManager.persist(booking3);
+
+        Booking booking4 = new Booking();
+        booking4.setApplicationUser(applicationUser3);
+        booking4.setBookingDuration(BookingDuration.MORNING);
+        booking4.setDate(LocalDate.now().plusDays(5));
+        booking4.setState(State.PENDING);
+        entityManager.persist(booking4);
     }
 
 }

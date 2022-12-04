@@ -106,4 +106,16 @@ public class Booking {
         this.applicationUser = applicationUser;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+
+    @Override
+    public String toString() {
+        return "Booking [id=" + id + ", state=" + state + ", date=" + date + ", bookingDuration=" + bookingDuration
+                + ", applicationUser=" + applicationUser + "]";
+    }
+
 }
