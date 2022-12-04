@@ -1,6 +1,8 @@
 package ch.zli.m223.service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -74,5 +76,18 @@ public class BookingService {
             throw new ConflictException(
                     "Booking collides with date from another booking. Your booking has automatically been denied.");
         }
+    }
+
+    public Map<LocalDate, BookingDuration> getAvailableDates() {
+        // TODO MORNING und NOON bei gleichem Datum rausfiltern
+        List<Booking> bookings = entityManager
+                .createQuery(
+                        "SELECT b FROM Booking b WHERE b.bookingDuration != :bookingDuration AND b.date < :date",
+                        Booking.class)
+                .setParameter("bookingDuration", BookingDuration.FULLDAY)
+                .setParameter("date", LocalDate.now().plusDays(30))
+                .getResultStream()
+                .toList();
+        return null;
     }
 }

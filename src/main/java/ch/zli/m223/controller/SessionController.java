@@ -66,4 +66,18 @@ public class SessionController {
         }
         return applicationUserService.createApplicationUser(applicationUser);
     }
+
+    @POST
+    @Path("me/change/email")
+    @Valid
+    @Operation(summary = "Change the email of a user", description = "Change the email of an already registered user.")
+    @APIResponses(value = {
+            @APIResponse(responseCode = "200", description = "Succesfully registered new user"),
+            @APIResponse(responseCode = "409", description = "Email already in use")
+    })
+    public ApplicationUser changeEmail(ApplicationUser applicationUser) throws ConflictException {
+        ApplicationUser newUser = new ApplicationUser();
+        newUser.setEmail(applicationUser.getEmail());
+        return applicationUserService.update(newUser);
+    }
 }

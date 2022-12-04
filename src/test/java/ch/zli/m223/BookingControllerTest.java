@@ -120,9 +120,6 @@ public class BookingControllerTest {
     @Test
     @Order(8)
     void testDeleteEndpoint() {
-        Booking booking = new Booking();
-        booking.setBookingDuration(BookingDuration.NOON);
-        booking.setDate(LocalDate.of(2022, 9, 1));
         given().when().delete("/bookings/1").then()
                 .statusCode(204);
     }
@@ -130,11 +127,17 @@ public class BookingControllerTest {
     @Test
     @Order(9)
     void testGetEndpoint() {
-        Booking booking = new Booking();
-        booking.setBookingDuration(BookingDuration.NOON);
-        booking.setDate(LocalDate.of(2022, 9, 1));
-        given().when().delete("/bookings/1").then()
+        given().when().get("/bookings/1").then()
                 .statusCode(204);
     }
+
+    @Test
+    @Order(10)
+    void testGetStateEndpoint() {
+        given().when().get("/bookings/state/1").then()
+                .statusCode(403);
+    }
+
+    // TODO Add last endpoints
 
 }

@@ -45,8 +45,12 @@ public class ApplicationUserService {
     }
 
     @Transactional
-    public ApplicationUser update(ApplicationUser user) {
-        return entityManager.merge(user);
+    public ApplicationUser update(ApplicationUser user) throws ConflictException {
+        try {
+            return entityManager.merge(user);
+        } catch (PersistenceException e) {
+            throw new ConflictException("Email already in use");
+        }
     }
 
     public Optional<ApplicationUser> findByEmail(String email) {
