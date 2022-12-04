@@ -51,9 +51,11 @@ public class BookingController {
 
     @POST
     @Valid
-    @Operation(summary = "Create a booking", description = "Create a booking. If date/state is already booked the creation is automatically denied.")
+    @Operation(summary = "Create a booking", description = "Create a booking. If date/duration is already booked the creation is automatically denied.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully created booking. State is now pending."),
+            @APIResponse(responseCode = "400", description = "Invalid data"),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
             @APIResponse(responseCode = "409", description = "Date/duration is already booked. The booking has been automatically denied.")
     })
     public Booking createBooking(Booking booking) throws ConflictException {
@@ -68,12 +70,15 @@ public class BookingController {
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully updated booking."),
             @APIResponse(responseCode = "400", description = "This booking has already been canceled. No further changes are possible."),
-            @APIResponse(responseCode = "409", description = "Date/duration is already booked. The booking has been automatically denied.")
+            @APIResponse(responseCode = "400", description = "Invalid data"),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Forbidden"),
+            @APIResponse(responseCode = "409", description = "Date/duration is already booked. The booking has been automatically denied."),
     })
     @RolesAllowed({ "ADMIN" })
-    public Booking updateBooking(@PathParam("id") Long id, Booking booking) throws ConflictException {
+    public Booking updateBooking(@PathParam("id") Long id, Booking booking)
+            throws ConflictException, BadRequestException {
         booking.setId(id);
-        setUser(booking);
         return bookingsService.update(booking);
     }
 
@@ -81,7 +86,9 @@ public class BookingController {
     @Path("/{id}")
     @Operation(summary = "Delete a booking", description = "Delete a booking.")
     @APIResponses(value = {
-            @APIResponse(responseCode = "204", description = "Succesfully deleted booking.")
+            @APIResponse(responseCode = "204", description = "Succesfully deleted booking."),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Forbidden")
     })
     @RolesAllowed({ "ADMIN" })
     public void deleteBooking(@PathParam("id") Long id) {
@@ -93,7 +100,9 @@ public class BookingController {
     @Operation(summary = "Get a booking", description = "Get a booking.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully loaded booking."),
-            @APIResponse(responseCode = "204", description = "No booking with this id.")
+            @APIResponse(responseCode = "204", description = "No booking with this id."),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Forbidden")
     })
     @RolesAllowed({ "ADMIN" })
     public Booking getBooking(@PathParam("id") Long id) {
@@ -105,15 +114,20 @@ public class BookingController {
     @Operation(summary = "Get the state of a booking", description = "Get the state of a booking.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully loaded the state."),
-            @APIResponse(responseCode = "403", description = "Not a booking of the logged in user."),
-            @APIResponse(responseCode = "204", description = "No booking with this id.")
+            @APIResponse(responseCode = "204", description = "No booking with this id."),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Not a booking of the logged in user.")
     })
-    public State getState(@PathParam("id") Long id) {
+    public Response getState(@PathParam("id") Long id) throws ForbiddenException {
         Booking booking = bookingsService.find(id);
-        if (booking != null && booking.getApplicationUser().getEmail().equals(jwt.getClaim("upn"))) {
-            return booking.getState();
+        if (booking != null) {
+            if (booking.getApplicationUser().getEmail().equals(jwt.getClaim("upn"))) {
+                return Response.status(200).entity(booking.getState()).build();
+            } else {
+                throw new ForbiddenException("Forbidden");
+            }
         } else {
-            throw new ForbiddenException("Insufficient rights");
+            return Response.status(204).build();
         }
     }
 
@@ -123,7 +137,9 @@ public class BookingController {
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully accepted the booking."),
             @APIResponse(responseCode = "204", description = "No booking with this id."),
-            @APIResponse(responseCode = "400", description = "Booking has already been canceled.")
+            @APIResponse(responseCode = "400", description = "Booking has already been canceled."),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Forbidden")
     })
     @RolesAllowed({ "ADMIN" })
     public Response acceptBooking(@PathParam("id") Long id) throws BadRequestException {
@@ -135,17 +151,19 @@ public class BookingController {
             booking.setState(State.ACCEPTED);
             return Response.status(200).build();
         } else {
-            return Response.status(204).build();
+            throw new BadRequestException("No booking with this id");
         }
     }
 
     @POST
     @Path("/deny/{id}")
-    @Operation(summary = "Accept a booking", description = "Accept a booking.")
+    @Operation(summary = "Deny a booking", description = "Deny a booking.")
     @APIResponses(value = {
-            @APIResponse(responseCode = "200", description = "Succesfully accepted the booking."),
+            @APIResponse(responseCode = "200", description = "Succesfully denied the booking."),
             @APIResponse(responseCode = "204", description = "No booking with this id."),
-            @APIResponse(responseCode = "400", description = "Booking has already been canceled.")
+            @APIResponse(responseCode = "400", description = "Booking has already been canceled."),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Forbidden")
     })
     @RolesAllowed({ "ADMIN" })
     public Response denyBooking(@PathParam("id") Long id) throws BadRequestException {
@@ -157,17 +175,18 @@ public class BookingController {
             booking.setState(State.DENIED);
             return Response.status(200).build();
         } else {
-            return Response.status(204).build();
+            throw new BadRequestException("No booking with this id");
         }
     }
 
     @POST
     @Path("/cancel/{id}")
-    @Operation(summary = "Accept a booking", description = "Accept a booking.")
+    @Operation(summary = "Cancel a booking", description = "Cancel a booking.")
     @APIResponses(value = {
-            @APIResponse(responseCode = "200", description = "Succesfully accepted the booking."),
-            @APIResponse(responseCode = "204", description = "No booking with this id."),
-            @APIResponse(responseCode = "400", description = "Booking has already been canceled.")
+            @APIResponse(responseCode = "200", description = "Succesfully canceled the booking."),
+            @APIResponse(responseCode = "400", description = "No booking with this id."),
+            @APIResponse(responseCode = "400", description = "Booking has already been canceled."),
+            @APIResponse(responseCode = "401", description = "Unauthorized")
     })
     public Response cancelBooking(@PathParam("id") Long id) throws BadRequestException {
         Booking booking = bookingsService.find(id);
@@ -178,16 +197,17 @@ public class BookingController {
             booking.setState(State.CANCELED);
             return Response.status(200).build();
         } else {
-            return Response.status(204).build();
+            throw new BadRequestException("No booking with this id");
         }
     }
 
     @GET
     @Path("/available-dates")
-    @Operation(summary = "Get available dates/durations", description = "Get available dates/durations.")
+    @Operation(summary = "Get available dates with durations", description = "Get available dates with durations.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully loaded all available dates of the next 30 days."),
-            @APIResponse(responseCode = "204", description = "No available dates in the next 30 days.")
+            @APIResponse(responseCode = "204", description = "No available dates in the next 30 days."),
+            @APIResponse(responseCode = "401", description = "Unauthorized")
     })
     public Map<LocalDate, BookingDuration> getAvailableDates() {
         return bookingsService.getAvailableDates();

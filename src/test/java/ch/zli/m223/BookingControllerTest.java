@@ -112,12 +112,12 @@ public class BookingControllerTest {
 
     @Test
     @Order(7)
-    void testUpdateEndpoint() {
+    void testUpdateEndpointWithoutUser() {
         Booking booking = new Booking();
         booking.setBookingDuration(BookingDuration.NOON);
         booking.setDate(LocalDate.of(2022, 9, 1));
         given().header("Content-type", "application/json").body(booking).when().put("/bookings/1").then()
-                .statusCode(200);
+                .statusCode(400);
     }
 
     @Test
@@ -138,7 +138,7 @@ public class BookingControllerTest {
     @Order(10)
     void testGetStateEndpoint() {
         given().when().get("/bookings/state/1").then()
-                .statusCode(403);
+                .statusCode(204);
     }
 
     @Test

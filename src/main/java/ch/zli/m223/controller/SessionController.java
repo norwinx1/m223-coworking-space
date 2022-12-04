@@ -26,7 +26,7 @@ import ch.zli.m223.service.SessionService;
 @Path("/")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Tag(name = "Session", description = "Handling of the session")
+@Tag(name = "Session", description = "Handling of sessions")
 @PermitAll
 public class SessionController {
     @Inject
@@ -41,6 +41,7 @@ public class SessionController {
     @Operation(summary = "Login with email and password", description = "If email and password are correct a JWT token is returned for further authenticated requests.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully logged in"),
+            @APIResponse(responseCode = "400", description = "Invalid data"),
             @APIResponse(responseCode = "401", description = "Invalid login data")
     })
     public Response login(Credentials credentials) throws SecurityException {
@@ -56,6 +57,7 @@ public class SessionController {
     @Operation(summary = "Register a new user", description = "Register a new user with firstname, lastname, email and password. The first registered user is automatically assigned the role admin. All further users wil have the role member.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully registered new user"),
+            @APIResponse(responseCode = "400", description = "Invalid data"),
             @APIResponse(responseCode = "409", description = "Email already in use")
     })
     public ApplicationUser register(ApplicationUser applicationUser) throws ConflictException {
@@ -65,19 +67,5 @@ public class SessionController {
             applicationUser.setRole(Role.MEMBER);
         }
         return applicationUserService.createApplicationUser(applicationUser);
-    }
-
-    @POST
-    @Path("me/change/email")
-    @Valid
-    @Operation(summary = "Change the email of a user", description = "Change the email of an already registered user.")
-    @APIResponses(value = {
-            @APIResponse(responseCode = "200", description = "Succesfully registered new user"),
-            @APIResponse(responseCode = "409", description = "Email already in use")
-    })
-    public ApplicationUser changeEmail(ApplicationUser applicationUser) throws ConflictException {
-        ApplicationUser newUser = new ApplicationUser();
-        newUser.setEmail(applicationUser.getEmail());
-        return applicationUserService.update(newUser);
     }
 }

@@ -1,5 +1,7 @@
 package ch.zli.m223.controller;
 
+import java.util.Optional;
+
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -40,6 +42,9 @@ public class MemberController {
     @Operation(summary = "Create a member", description = "Create a new member. Similar to /register.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully created member."),
+            @APIResponse(responseCode = "400", description = "Invalid data"),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Forbidden"),
             @APIResponse(responseCode = "409", description = "Email already in use")
     })
     public ApplicationUser createApplicationUser(ApplicationUser member) throws ConflictException {
@@ -52,6 +57,9 @@ public class MemberController {
     @Operation(summary = "Update a member", description = "Update a member.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully updated member."),
+            @APIResponse(responseCode = "400", description = "Invalid data"),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Forbidden"),
             @APIResponse(responseCode = "409", description = "Email already in use")
     })
     public ApplicationUser updateApplicationUser(@PathParam("id") Long id, ApplicationUser member)
@@ -64,7 +72,9 @@ public class MemberController {
     @Path("/{id}")
     @Operation(summary = "Delete a member", description = "Delete a member.")
     @APIResponses(value = {
-            @APIResponse(responseCode = "204", description = "Succesfully deleted member.")
+            @APIResponse(responseCode = "204", description = "Succesfully deleted member."),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Forbidden")
     })
     public void deleteApplicationUser(@PathParam("id") Long id) {
         applicationUserService.deleteApplicationUser(id);
@@ -75,9 +85,28 @@ public class MemberController {
     @Operation(summary = "Get a member", description = "Get a member by id.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully loaded member."),
-            @APIResponse(responseCode = "204", description = "No member with this id.")
+            @APIResponse(responseCode = "204", description = "No member with this id."),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Forbidden")
     })
     public ApplicationUser getApplicationUser(@PathParam("id") Long id) {
         return applicationUserService.find(id);
+    }
+
+    @POST
+    @Path("me/change/email")
+    @Valid
+    @Operation(summary = "Change the email of the logged in user", description = "Change the email of an already registered and currently logged in user.")
+    @APIResponses(value = {
+            @APIResponse(responseCode = "200", description = "Succesfully changed email. You have to login again."),
+            @APIResponse(responseCode = "400", description = "Invalid data"),
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "409", description = "Email already in use")
+    })
+    @RolesAllowed({ "MEMBER" })
+    public ApplicationUser changeEmail(ApplicationUser applicationUser) throws ConflictException {
+        Optional<ApplicationUser> user = applicationUserService.findByEmail(jwt.getClaim("upn"));
+        user.get().setEmail(applicationUser.getEmail());
+        return applicationUserService.update(user.get());
     }
 }
