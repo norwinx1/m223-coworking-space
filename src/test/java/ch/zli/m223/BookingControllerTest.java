@@ -85,4 +85,56 @@ public class BookingControllerTest {
                 .statusCode(400);
     }
 
+    @TestSecurity(user = "daniel.müller@example.com", roles = { "MEMBER" })
+    @JwtSecurity(claims = {
+            @Claim(key = "upn", value = "daniel.müller@example.com")
+    })
+    @Test
+    @Order(6)
+    void testEndpointInsufficientRights() {
+        Booking booking = new Booking();
+        given().header("Content-type", "application/json").body(booking).when().get("/bookings/1").then()
+                .statusCode(403);
+    }
+
+    @Test
+    @Order(7)
+    void testUpdateEndpointWithUnavailableDate() {
+        Booking booking = new Booking();
+        booking.setBookingDuration(BookingDuration.NOON);
+        booking.setDate(LocalDate.of(2022, 12, 1));
+        given().header("Content-type", "application/json").body(booking).when().post("/bookings").then()
+                .statusCode(409);
+    }
+
+    @Test
+    @Order(7)
+    void testUpdateEndpoint() {
+        Booking booking = new Booking();
+        booking.setBookingDuration(BookingDuration.NOON);
+        booking.setDate(LocalDate.of(2022, 9, 1));
+        given().header("Content-type", "application/json").body(booking).when().put("/bookings/1").then()
+                .statusCode(200);
+    }
+
+    @Test
+    @Order(8)
+    void testDeleteEndpoint() {
+        Booking booking = new Booking();
+        booking.setBookingDuration(BookingDuration.NOON);
+        booking.setDate(LocalDate.of(2022, 9, 1));
+        given().when().delete("/bookings/1").then()
+                .statusCode(204);
+    }
+
+    @Test
+    @Order(9)
+    void testGetEndpoint() {
+        Booking booking = new Booking();
+        booking.setBookingDuration(BookingDuration.NOON);
+        booking.setDate(LocalDate.of(2022, 9, 1));
+        given().when().delete("/bookings/1").then()
+                .statusCode(204);
+    }
+
 }
