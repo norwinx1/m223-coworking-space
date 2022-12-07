@@ -38,7 +38,6 @@ public class MemberController {
     ApplicationUserService applicationUserService;
 
     @POST
-    @Valid
     @Operation(summary = "Create a member", description = "Create a new member. Similar to /register.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully created member."),
@@ -47,13 +46,12 @@ public class MemberController {
             @APIResponse(responseCode = "403", description = "Forbidden"),
             @APIResponse(responseCode = "409", description = "Email already in use")
     })
-    public ApplicationUser createApplicationUser(ApplicationUser member) throws ConflictException {
+    public ApplicationUser createApplicationUser(@Valid ApplicationUser member) throws ConflictException {
         return applicationUserService.createApplicationUser(member);
     }
 
     @PUT
     @Path("/{id}")
-    @Valid
     @Operation(summary = "Update a member", description = "Update a member.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully updated member."),
@@ -62,7 +60,7 @@ public class MemberController {
             @APIResponse(responseCode = "403", description = "Forbidden"),
             @APIResponse(responseCode = "409", description = "Email already in use")
     })
-    public ApplicationUser updateApplicationUser(@PathParam("id") Long id, ApplicationUser member)
+    public ApplicationUser updateApplicationUser(@PathParam("id") Long id, @Valid ApplicationUser member)
             throws ConflictException {
         member.setId(id);
         return applicationUserService.update(member);
@@ -95,7 +93,6 @@ public class MemberController {
 
     @POST
     @Path("me/change/email")
-    @Valid
     @Operation(summary = "Change the email of the logged in user", description = "Change the email of an already registered and currently logged in user.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully changed email. You have to login again."),
@@ -104,7 +101,7 @@ public class MemberController {
             @APIResponse(responseCode = "409", description = "Email already in use")
     })
     @RolesAllowed({ "MEMBER" })
-    public ApplicationUser changeEmail(ApplicationUser applicationUser) throws ConflictException {
+    public ApplicationUser changeEmail(@Valid ApplicationUser applicationUser) throws ConflictException {
         Optional<ApplicationUser> user = applicationUserService.findByEmail(jwt.getClaim("upn"));
         user.get().setEmail(applicationUser.getEmail());
         return applicationUserService.update(user.get());

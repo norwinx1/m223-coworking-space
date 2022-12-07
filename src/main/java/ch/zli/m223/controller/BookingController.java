@@ -2,7 +2,6 @@ package ch.zli.m223.controller;
 
 import java.time.LocalDate;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -29,6 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import ch.zli.m223.domain.entity.ApplicationUser;
 import ch.zli.m223.domain.entity.Booking;
 import ch.zli.m223.domain.entity.BookingDuration;
+import ch.zli.m223.domain.entity.Role;
 import ch.zli.m223.domain.entity.State;
 import ch.zli.m223.domain.exception.ConflictException;
 import ch.zli.m223.service.ApplicationUserService;
@@ -50,7 +50,6 @@ public class BookingController {
     ApplicationUserService applicationUserService;
 
     @POST
-    @Valid
     @Operation(summary = "Create a booking", description = "Create a booking. If date/duration is already booked the creation is automatically denied.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully created booking. State is now pending."),
@@ -58,14 +57,13 @@ public class BookingController {
             @APIResponse(responseCode = "401", description = "Unauthorized"),
             @APIResponse(responseCode = "409", description = "Date/duration is already booked. The booking has been automatically denied.")
     })
-    public Booking createBooking(Booking booking) throws ConflictException {
+    public Booking createBooking(@Valid Booking booking) throws ConflictException {
         setUser(booking);
         return bookingsService.createBooking(booking);
     }
 
     @PUT
     @Path("/{id}")
-    @Valid
     @Operation(summary = "Update a booking", description = "Update a booking. If date/state is already booked the creation is automatically denied.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully updated booking."),
@@ -76,9 +74,10 @@ public class BookingController {
             @APIResponse(responseCode = "409", description = "Date/duration is already booked. The booking has been automatically denied."),
     })
     @RolesAllowed({ "ADMIN" })
-    public Booking updateBooking(@PathParam("id") Long id, Booking booking)
+    public Booking updateBooking(@PathParam("id") Long id, @Valid Booking booking)
             throws ConflictException, BadRequestException {
         booking.setId(id);
+        setUser(booking);
         return bookingsService.update(booking);
     }
 
@@ -121,7 +120,7 @@ public class BookingController {
     public Response getState(@PathParam("id") Long id) throws ForbiddenException {
         Booking booking = bookingsService.find(id);
         if (booking != null) {
-            if (booking.getApplicationUser().getEmail().equals(jwt.getClaim("upn"))) {
+            if (isAdmin() || booking.getApplicationUser().equals(getUser())) {
                 return Response.status(200).entity(booking.getState()).build();
             } else {
                 throw new ForbiddenException("Forbidden");
@@ -136,7 +135,7 @@ public class BookingController {
     @Operation(summary = "Accept a booking", description = "Accept a booking.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully accepted the booking."),
-            @APIResponse(responseCode = "204", description = "No booking with this id."),
+            @APIResponse(responseCode = "400", description = "No booking with this id."),
             @APIResponse(responseCode = "400", description = "Booking has already been canceled."),
             @APIResponse(responseCode = "401", description = "Unauthorized"),
             @APIResponse(responseCode = "403", description = "Forbidden")
@@ -149,6 +148,7 @@ public class BookingController {
                 throw new BadRequestException("Booking has already been canceled");
             }
             booking.setState(State.ACCEPTED);
+            bookingsService.merge(booking);
             return Response.status(200).build();
         } else {
             throw new BadRequestException("No booking with this id");
@@ -160,7 +160,7 @@ public class BookingController {
     @Operation(summary = "Deny a booking", description = "Deny a booking.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully denied the booking."),
-            @APIResponse(responseCode = "204", description = "No booking with this id."),
+            @APIResponse(responseCode = "400", description = "No booking with this id."),
             @APIResponse(responseCode = "400", description = "Booking has already been canceled."),
             @APIResponse(responseCode = "401", description = "Unauthorized"),
             @APIResponse(responseCode = "403", description = "Forbidden")
@@ -173,6 +173,7 @@ public class BookingController {
                 throw new BadRequestException("Booking has already been canceled");
             }
             booking.setState(State.DENIED);
+            bookingsService.merge(booking);
             return Response.status(200).build();
         } else {
             throw new BadRequestException("No booking with this id");
@@ -186,16 +187,22 @@ public class BookingController {
             @APIResponse(responseCode = "200", description = "Succesfully canceled the booking."),
             @APIResponse(responseCode = "400", description = "No booking with this id."),
             @APIResponse(responseCode = "400", description = "Booking has already been canceled."),
-            @APIResponse(responseCode = "401", description = "Unauthorized")
+            @APIResponse(responseCode = "401", description = "Unauthorized"),
+            @APIResponse(responseCode = "403", description = "Not a booking of the logged in user.")
     })
-    public Response cancelBooking(@PathParam("id") Long id) throws BadRequestException {
+    public Response cancelBooking(@PathParam("id") Long id) throws BadRequestException, ForbiddenException {
         Booking booking = bookingsService.find(id);
         if (booking != null) {
-            if (booking.getState().equals(State.CANCELED)) {
-                throw new BadRequestException("Booking has already been canceled");
+            if (isAdmin() || booking.getApplicationUser().equals(getUser())) {
+                if (booking.getState().equals(State.CANCELED)) {
+                    throw new BadRequestException("Booking has already been canceled");
+                }
+                booking.setState(State.CANCELED);
+                bookingsService.merge(booking);
+                return Response.status(200).build();
+            } else {
+                throw new ForbiddenException("Forbidden");
             }
-            booking.setState(State.CANCELED);
-            return Response.status(200).build();
         } else {
             throw new BadRequestException("No booking with this id");
         }
@@ -214,7 +221,14 @@ public class BookingController {
     }
 
     private void setUser(Booking booking) {
-        Optional<ApplicationUser> applicationUser = applicationUserService.findByEmail(jwt.getClaim("upn"));
-        booking.setApplicationUser(applicationUser.get());
+        booking.setApplicationUser(getUser());
+    }
+
+    private ApplicationUser getUser() {
+        return applicationUserService.findByEmail(jwt.getClaim("upn")).get();
+    }
+
+    private boolean isAdmin() {
+        return jwt.getGroups().contains(Role.ADMIN.name());
     }
 }

@@ -48,14 +48,20 @@ public class BookingService {
     }
 
     @Transactional
+    public void merge(Booking booking) {
+        entityManager.merge(booking);
+    }
+
+    @Transactional
     public Booking update(Booking booking) throws ConflictException, BadRequestException {
         checkDate(booking);
-        checkState(booking);
+        checkState(booking.getId());
         return entityManager.merge(booking);
     }
 
-    private void checkState(Booking booking) {
-        if (State.CANCELED.equals(booking.getState())) {
+    private void checkState(Long id) {
+        Booking booking = find(id);
+        if (booking != null && State.CANCELED.equals(booking.getState())) {
             throw new BadRequestException("Booking has already been canceled");
         }
     }
@@ -63,15 +69,25 @@ public class BookingService {
     private void checkDate(Booking booking) throws ConflictException {
         List<Booking> bookings = entityManager
                 .createQuery(
-                        "SELECT b FROM Booking b WHERE b.date = :date",
+                        "SELECT b FROM Booking b WHERE b.date = :date AND b.state != :state",
                         Booking.class)
                 .setParameter("date", booking.getDate())
+                .setParameter("state", State.CANCELED)
                 .getResultStream()
-                .filter(x -> x.getBookingDuration() == booking.getBookingDuration()
-                        || x.getBookingDuration() == BookingDuration.FULLDAY
-                        || booking.getBookingDuration() == BookingDuration.FULLDAY)
                 .toList();
-        if (bookings.size() == 0 || (bookings.size() == 1 && bookings.get(0).getId() == booking.getId())) {
+
+        if (booking.getBookingDuration().equals(BookingDuration.FULLDAY) && bookings.size() != 0) {
+            booking.setState(State.DENIED);
+            throw new ConflictException(
+                    "Booking collides with date from another booking. Your booking has automatically been denied.");
+        }
+
+        List<Booking> collidingBookings = bookings.stream()
+                .filter(x -> x.getBookingDuration() != booking.getBookingDuration()
+                        || x.getBookingDuration() != BookingDuration.FULLDAY
+                        || x.getId() != booking.getId())
+                .toList();
+        if (collidingBookings.size() == 0) {
             booking.setState(State.PENDING);
         } else {
             booking.setState(State.DENIED);

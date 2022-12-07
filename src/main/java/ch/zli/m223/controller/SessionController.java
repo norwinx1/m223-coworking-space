@@ -37,14 +37,13 @@ public class SessionController {
 
     @POST
     @Path("login")
-    @Valid
     @Operation(summary = "Login with email and password", description = "If email and password are correct a JWT token is returned for further authenticated requests.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully logged in"),
             @APIResponse(responseCode = "400", description = "Invalid data"),
             @APIResponse(responseCode = "401", description = "Invalid login data")
     })
-    public Response login(Credentials credentials) throws SecurityException {
+    public Response login(@Valid Credentials credentials) throws SecurityException {
         String token = sessionService.checkCredentials(credentials);
         return ResponseBuilder.ok("", MediaType.APPLICATION_JSON)
                 .header("Authorization", token)
@@ -53,14 +52,13 @@ public class SessionController {
 
     @POST
     @Path("register")
-    @Valid
     @Operation(summary = "Register a new user", description = "Register a new user with firstname, lastname, email and password. The first registered user is automatically assigned the role admin. All further users wil have the role member.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully registered new user"),
             @APIResponse(responseCode = "400", description = "Invalid data"),
             @APIResponse(responseCode = "409", description = "Email already in use")
     })
-    public ApplicationUser register(ApplicationUser applicationUser) throws ConflictException {
+    public ApplicationUser register(@Valid ApplicationUser applicationUser) throws ConflictException {
         if (applicationUserService.count() == 0) {
             applicationUser.setRole(Role.ADMIN);
         } else {

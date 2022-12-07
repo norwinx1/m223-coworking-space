@@ -34,7 +34,6 @@ public class Booking {
 
     @ManyToOne(optional = false)
     @Fetch(FetchMode.JOIN)
-    @NotNull
     private ApplicationUser applicationUser;
 
     /**

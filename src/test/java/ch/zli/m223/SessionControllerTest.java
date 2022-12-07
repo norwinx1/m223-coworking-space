@@ -35,6 +35,34 @@ public class SessionControllerTest {
 
     @Test
     @Order(2)
+    void testLoginEndpointWithEmptyCredentials() {
+        Credentials credentials = new Credentials();
+        credentials.setEmail("max.rüdiger@example.com");
+        credentials.setPassword("");
+        given().header("Content-type", "application/json").body(credentials).when().post("/login").then()
+                .statusCode(400);
+    }
+
+    @Test
+    @Order(3)
+    void testRegisterEndpointWithCorrectData() {
+        ApplicationUser user = setUser();
+        user.setEmail("test@test.com");
+        given().header("Content-type", "application/json").body(user).when().post("/register").then()
+                .statusCode(200);
+    }
+
+    @Test
+    @Order(4)
+    void testRegisterEndpointWithEmptyEmail() {
+        ApplicationUser user = setUser();
+        user.setEmail("");
+        given().header("Content-type", "application/json").body(user).when().post("/register").then()
+                .statusCode(400);
+    }
+
+    @Test
+    @Order(5)
     void testRegisterEndpointWithNotUniqueEmail() {
         given().header("Content-type", "application/json").body(setUser()).when().post("/register").then()
                 .statusCode(409);
