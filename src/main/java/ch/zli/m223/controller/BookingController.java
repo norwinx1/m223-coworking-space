@@ -64,7 +64,7 @@ public class BookingController {
 
     @PUT
     @Path("/{id}")
-    @Operation(summary = "Update a booking", description = "Update a booking. If date/state is already booked the creation is automatically denied.")
+    @Operation(summary = "Update a booking", description = "Update a booking. If date/duration is already booked the creation is automatically denied.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully updated booking."),
             @APIResponse(responseCode = "400", description = "This booking has already been canceled. No further changes are possible."),
@@ -188,7 +188,7 @@ public class BookingController {
 
     @GET
     @Path("/available-dates")
-    @Operation(summary = "Get available dates with durations", description = "Get available dates with durations.")
+    @Operation(summary = "Get available dates with durations", description = "Get available dates of the next 30 days with durations.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully loaded all available dates of the next 30 days."),
             @APIResponse(responseCode = "204", description = "No available dates in the next 30 days."),
