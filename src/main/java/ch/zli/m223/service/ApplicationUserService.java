@@ -10,6 +10,7 @@ import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 
 import ch.zli.m223.domain.entity.ApplicationUser;
+import ch.zli.m223.domain.entity.Role;
 import ch.zli.m223.domain.exception.ConflictException;
 
 @ApplicationScoped
@@ -19,6 +20,11 @@ public class ApplicationUserService {
 
     @Transactional
     public ApplicationUser createApplicationUser(ApplicationUser user) throws ConflictException {
+        if (count() == 0) {
+            user.setRole(Role.ADMIN);
+        } else {
+            user.setRole(Role.MEMBER);
+        }
         try {
             entityManager.persist(user);
             return user;
@@ -64,5 +70,11 @@ public class ApplicationUserService {
 
     public Long count() {
         return entityManager.createQuery("SELECT COUNT(id) FROM ApplicationUser u", Long.class).getSingleResult();
+    }
+
+    public ApplicationUser changeEmail(String currentEmail, String newEmail) throws ConflictException {
+        Optional<ApplicationUser> user = findByEmail(currentEmail);
+        user.get().setEmail(newEmail);
+        return update(user.get());
     }
 }

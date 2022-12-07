@@ -135,4 +135,17 @@ public class BookingService {
             case FULLDAY -> dates.remove(booking.getDate());
         }
     }
+
+    public void setState(Long id, State state) {
+        Booking booking = find(id);
+        if (booking != null) {
+            if (booking.getState().equals(State.CANCELED)) {
+                throw new BadRequestException("Booking has already been canceled");
+            }
+            booking.setState(state);
+            merge(booking);
+        } else {
+            throw new BadRequestException("No booking with this id");
+        }
+    }
 }

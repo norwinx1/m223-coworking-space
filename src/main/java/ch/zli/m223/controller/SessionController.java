@@ -17,7 +17,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
 
 import ch.zli.m223.domain.entity.ApplicationUser;
-import ch.zli.m223.domain.entity.Role;
 import ch.zli.m223.domain.exception.ConflictException;
 import ch.zli.m223.domain.model.Credentials;
 import ch.zli.m223.service.ApplicationUserService;
@@ -59,11 +58,6 @@ public class SessionController {
             @APIResponse(responseCode = "409", description = "Email already in use")
     })
     public ApplicationUser register(@Valid ApplicationUser applicationUser) throws ConflictException {
-        if (applicationUserService.count() == 0) {
-            applicationUser.setRole(Role.ADMIN);
-        } else {
-            applicationUser.setRole(Role.MEMBER);
-        }
         return applicationUserService.createApplicationUser(applicationUser);
     }
 }

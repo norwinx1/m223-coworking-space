@@ -31,7 +31,7 @@ public class BookingControllerTest {
 
         @BeforeEach
         void setup() {
-                testDataService.generateTestData(null);
+                testDataService.generateTestData();
         }
 
         @Test

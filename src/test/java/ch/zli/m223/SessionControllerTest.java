@@ -20,7 +20,7 @@ public class SessionControllerTest {
 
     @BeforeEach
     void setup() {
-        testDataService.generateTestData(null);
+        testDataService.generateTestData();
     }
 
     @Test

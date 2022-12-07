@@ -26,7 +26,7 @@ public class MemberControllerTest {
 
     @BeforeEach
     void setup() {
-        testDataService.generateTestData(null);
+        testDataService.generateTestData();
     }
 
     @Test

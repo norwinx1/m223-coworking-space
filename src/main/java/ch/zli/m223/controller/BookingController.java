@@ -142,17 +142,8 @@ public class BookingController {
     })
     @RolesAllowed({ "ADMIN" })
     public Response acceptBooking(@PathParam("id") Long id) throws BadRequestException {
-        Booking booking = bookingsService.find(id);
-        if (booking != null) {
-            if (booking.getState().equals(State.CANCELED)) {
-                throw new BadRequestException("Booking has already been canceled");
-            }
-            booking.setState(State.ACCEPTED);
-            bookingsService.merge(booking);
-            return Response.status(200).build();
-        } else {
-            throw new BadRequestException("No booking with this id");
-        }
+        bookingsService.setState(id, State.ACCEPTED);
+        return Response.status(200).build();
     }
 
     @POST
@@ -167,17 +158,8 @@ public class BookingController {
     })
     @RolesAllowed({ "ADMIN" })
     public Response denyBooking(@PathParam("id") Long id) throws BadRequestException {
-        Booking booking = bookingsService.find(id);
-        if (booking != null) {
-            if (booking.getState().equals(State.CANCELED)) {
-                throw new BadRequestException("Booking has already been canceled");
-            }
-            booking.setState(State.DENIED);
-            bookingsService.merge(booking);
-            return Response.status(200).build();
-        } else {
-            throw new BadRequestException("No booking with this id");
-        }
+        bookingsService.setState(id, State.DENIED);
+        return Response.status(200).build();
     }
 
     @POST
@@ -194,11 +176,7 @@ public class BookingController {
         Booking booking = bookingsService.find(id);
         if (booking != null) {
             if (isAdmin() || booking.getApplicationUser().equals(getUser())) {
-                if (booking.getState().equals(State.CANCELED)) {
-                    throw new BadRequestException("Booking has already been canceled");
-                }
-                booking.setState(State.CANCELED);
-                bookingsService.merge(booking);
+                bookingsService.setState(id, State.CANCELED);
                 return Response.status(200).build();
             } else {
                 throw new ForbiddenException("Forbidden");

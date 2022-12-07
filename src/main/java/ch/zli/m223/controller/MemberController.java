@@ -1,7 +1,5 @@
 package ch.zli.m223.controller;
 
-import java.util.Optional;
-
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -103,8 +101,6 @@ public class MemberController {
     })
     @RolesAllowed({ "MEMBER" })
     public ApplicationUser changeEmail(@NotBlank String email) throws ConflictException {
-        Optional<ApplicationUser> user = applicationUserService.findByEmail(jwt.getClaim("upn"));
-        user.get().setEmail(email);
-        return applicationUserService.update(user.get());
+        return applicationUserService.changeEmail(jwt.getClaim("upn"), email);
     }
 }

@@ -26,8 +26,12 @@ public class TestDataService {
     @Inject
     PasswordService passwordService;
 
+    public void onStartup(@Observes StartupEvent event) {
+        generateTestData();
+    }
+
     @Transactional
-    public void generateTestData(@Observes StartupEvent event) {
+    public void generateTestData() {
         entityManager.createNativeQuery("DELETE FROM booking CASCADE").executeUpdate();
         entityManager.createNativeQuery("DELETE FROM applicationuser CASCADE").executeUpdate();
 
