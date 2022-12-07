@@ -2,21 +2,28 @@ package ch.zli.m223;
 
 import static io.restassured.RestAssured.given;
 
-import org.junit.jupiter.api.Order;
+import javax.inject.Inject;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import ch.zli.m223.domain.entity.ApplicationUser;
 import ch.zli.m223.domain.entity.Role;
 import ch.zli.m223.domain.model.Credentials;
-import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 public class SessionControllerTest {
 
+    @Inject
+    TestDataService testDataService;
+
+    @BeforeEach
+    void setup() {
+        testDataService.generateTestData(null);
+    }
+
     @Test
-    @Order(0)
-    @TestTransaction
     void testLoginEndpointWithCorrectCredentials() {
         Credentials credentials = new Credentials();
         credentials.setEmail("max.rüdiger@example.com");
@@ -26,8 +33,6 @@ public class SessionControllerTest {
     }
 
     @Test
-    @Order(1)
-    @TestTransaction
     void testLoginEndpointWithIncorrectCredentials() {
         Credentials credentials = new Credentials();
         credentials.setEmail("max.rüdiger@example.com");
@@ -37,8 +42,6 @@ public class SessionControllerTest {
     }
 
     @Test
-    @Order(2)
-    @TestTransaction
     void testLoginEndpointWithEmptyCredentials() {
         Credentials credentials = new Credentials();
         credentials.setEmail("max.rüdiger@example.com");
@@ -48,8 +51,6 @@ public class SessionControllerTest {
     }
 
     @Test
-    @Order(3)
-    @TestTransaction
     void testRegisterEndpointWithCorrectData() {
         ApplicationUser user = setUser();
         user.setEmail("test@test.com");
@@ -58,8 +59,6 @@ public class SessionControllerTest {
     }
 
     @Test
-    @Order(4)
-    @TestTransaction
     void testRegisterEndpointWithEmptyEmail() {
         ApplicationUser user = setUser();
         user.setEmail("");
@@ -68,8 +67,6 @@ public class SessionControllerTest {
     }
 
     @Test
-    @Order(5)
-    @TestTransaction
     void testRegisterEndpointWithNotUniqueEmail() {
         given().header("Content-type", "application/json").body(setUser()).when().post("/register").then()
                 .statusCode(409);

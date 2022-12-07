@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -101,9 +102,9 @@ public class MemberController {
             @APIResponse(responseCode = "409", description = "Email already in use")
     })
     @RolesAllowed({ "MEMBER" })
-    public ApplicationUser changeEmail(@Valid ApplicationUser applicationUser) throws ConflictException {
+    public ApplicationUser changeEmail(@NotBlank String email) throws ConflictException {
         Optional<ApplicationUser> user = applicationUserService.findByEmail(jwt.getClaim("upn"));
-        user.get().setEmail(applicationUser.getEmail());
+        user.get().setEmail(email);
         return applicationUserService.update(user.get());
     }
 }

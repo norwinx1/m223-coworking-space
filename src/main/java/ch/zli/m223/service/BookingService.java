@@ -83,9 +83,9 @@ public class BookingService {
         }
 
         List<Booking> collidingBookings = bookings.stream()
-                .filter(x -> x.getBookingDuration() != booking.getBookingDuration()
-                        || x.getBookingDuration() != BookingDuration.FULLDAY
-                        || x.getId() != booking.getId())
+                .filter(x -> x.getBookingDuration() == booking.getBookingDuration()
+                        || x.getBookingDuration() == BookingDuration.FULLDAY
+                        || x.getId() == booking.getId())
                 .toList();
         if (collidingBookings.size() == 0) {
             booking.setState(State.PENDING);

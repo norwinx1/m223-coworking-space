@@ -39,26 +39,29 @@ public class MemberControllerTest {
 
     @Test
     void testUpdateEndpoint() {
-        ApplicationUser user = given().header("Content-type", "application/json").body(setUser()).when()
-                .post("/members").as(ApplicationUser.class);
-        given().header("Content-type", "application/json").body(setUser()).when().put("/members/" + user.getId()).then()
+        Long id = createUser();
+        given().header("Content-type", "application/json").body(setUser()).when().put("/members/" + id).then()
+                .statusCode(200);
+        given().when().get("/members/" + id)
+                .then()
                 .statusCode(200);
     }
 
     @Test
     void testDeleteEndpoint() {
-        ApplicationUser user = given().header("Content-type", "application/json").body(setUser()).when()
-                .post("/members").as(ApplicationUser.class);
-        given().when().delete("/members/" + user.getId())
+        Long id = createUser();
+        given().when().delete("/members/" + id)
+                .then()
+                .statusCode(204);
+        given().when().get("/members/" + id)
                 .then()
                 .statusCode(204);
     }
 
     @Test
     void testGetEndpoint() {
-        ApplicationUser user = given().header("Content-type", "application/json").body(setUser()).when()
-                .post("/members").as(ApplicationUser.class);
-        given().when().get("/members/" + user.getId())
+        Long id = createUser();
+        given().when().get("/members/" + id)
                 .then()
                 .statusCode(200);
     }
@@ -69,8 +72,18 @@ public class MemberControllerTest {
             @Claim(key = "upn", value = "daniel.müller@example.com")
     })
     void testChangeEmailEndpoint() {
-        given().header("Content-type", "application/json").body(setUser()).when()
+        given().header("Content-type", "application/json").body("test@test.com").when()
                 .post("members/me/change/email").then().statusCode(200);
+    }
+
+    @Test
+    @TestSecurity(user = "daniel.müller@example.com", roles = { "MEMBER" })
+    @JwtSecurity(claims = {
+            @Claim(key = "upn", value = "daniel.müller@example.com")
+    })
+    void testChangeEmailEndpointWithBlankEmail() {
+        given().header("Content-type", "application/json").body("").when()
+                .post("members/me/change/email").then().statusCode(400);
     }
 
     private ApplicationUser setUser() {
@@ -81,6 +94,11 @@ public class MemberControllerTest {
         applicationUser1.setPassword("password");
         applicationUser1.setRole(Role.ADMIN);
         return applicationUser1;
+    }
+
+    private Long createUser() {
+        return given().header("Content-type", "application/json").body(setUser()).when()
+                .post("/members").as(ApplicationUser.class).getId();
     }
 
 }
