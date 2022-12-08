@@ -163,60 +163,53 @@ public class BookingControllerTest {
         @Test
         void testUpdateEndpointWithCanceledBooking() {
                 Booking booking = new Booking();
-                Long id = createBooking();
-                given().when().header("Content-type", "application/json").post("/bookings/cancel/" + id).then()
-                                .statusCode(200);
-                given().header("Content-type", "application/json").body(booking).when().put("/bookings/" + id).then()
+                booking.setBookingDuration(BookingDuration.NOON);
+                booking.setDate(LocalDate.of(2022, 9, 1));
+                given().header("Content-type", "application/json").body(booking).when().put("/bookings/" + 2).then()
                                 .statusCode(400);
         }
 
         @Test
         void testDeleteEndpoint() {
-                Long id = createBooking();
-                given().when().delete("/bookings/" + id).then()
+                given().when().delete("/bookings/" + 1).then()
                                 .statusCode(204);
-                given().when().get("/bookings/" + id).then()
+                given().when().get("/bookings/" + 1).then()
                                 .statusCode(204);
         }
 
         @Test
         void testGetEndpoint() {
-                Long id = createBooking();
-                given().when().get("/bookings/" + id).then()
+                given().when().get("/bookings/" + 1).then()
                                 .statusCode(200).and().body(containsString("FULLDAY"));
         }
 
         @Test
         void testGetStateEndpoint() {
-                Long id = createBooking();
-                given().when().get("/bookings/state/" + id).then()
+                given().when().get("/bookings/state/" + 1).then()
                                 .statusCode(200).and().body(containsString("PENDING"));
         }
 
         @Test
         void testAcceptEndpoint() {
-                Long id = createBooking();
-                given().when().header("Content-type", "application/json").post("/bookings/accept/" + id).then()
+                given().when().header("Content-type", "application/json").post("/bookings/accept/" + 1).then()
                                 .statusCode(200);
-                given().when().get("/bookings/state/" + id).then()
+                given().when().get("/bookings/state/" + 1).then()
                                 .statusCode(200).and().body(containsString("ACCEPTED"));
         }
 
         @Test
         void testDenyEndpoint() {
-                Long id = createBooking();
-                given().when().header("Content-type", "application/json").post("/bookings/deny/" + id).then()
+                given().when().header("Content-type", "application/json").post("/bookings/deny/" + 1).then()
                                 .statusCode(200);
-                given().when().get("/bookings/state/" + id).then()
+                given().when().get("/bookings/state/" + 1).then()
                                 .statusCode(200).and().body(containsString("DENIED"));
         }
 
         @Test
         void testCancelEndpoint() {
-                Long id = createBooking();
-                given().when().header("Content-type", "application/json").post("/bookings/cancel/" + id).then()
+                given().when().header("Content-type", "application/json").post("/bookings/cancel/" + 1).then()
                                 .statusCode(200);
-                given().when().get("/bookings/state/" + id).then()
+                given().when().get("/bookings/state/" + 1).then()
                                 .statusCode(200).and().body(containsString("CANCELED"));
         }
 
@@ -230,14 +223,6 @@ public class BookingControllerTest {
                 given().when().get("/bookings/available-dates").then()
                                 .statusCode(200)
                                 .body(containsString(dates.get(LocalDate.now()).toString()));
-        }
-
-        private Long createBooking() {
-                Booking booking = new Booking();
-                booking.setBookingDuration(BookingDuration.FULLDAY);
-                booking.setDate(LocalDate.of(2022, 12, 4));
-                return given().header("Content-type", "application/json").body(booking).when().post("/bookings")
-                                .as(Booking.class).getId();
         }
 
 }

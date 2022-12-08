@@ -32,8 +32,10 @@ public class TestDataService {
 
     @Transactional
     public void generateTestData() {
-        entityManager.createNativeQuery("DELETE FROM booking CASCADE").executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM applicationuser CASCADE").executeUpdate();
+        entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
+        entityManager.createNativeQuery("TRUNCATE TABLE booking RESTART IDENTITY").executeUpdate();
+        entityManager.createNativeQuery("TRUNCATE TABLE applicationuser RESTART IDENTITY").executeUpdate();
+        entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
 
         String password1 = passwordService.hashPassword("password");
         ApplicationUser applicationUser1 = new ApplicationUser();

@@ -36,6 +36,10 @@ public class ApplicationUserService {
     @Transactional
     public void deleteApplicationUser(Long id) {
         entityManager
+                .createNativeQuery("DELETE FROM booking WHERE applicationuser_id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+        entityManager
                 .createQuery("DELETE FROM ApplicationUser u WHERE u.id = :id")
                 .setParameter("id", id)
                 .executeUpdate();
