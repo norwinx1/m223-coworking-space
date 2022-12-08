@@ -1,6 +1,6 @@
 # Coworking Space Projekt
 
-Ein Buchungssystem in einem Coworking Space für den ÜK M223.
+Ein Buchungssystem in einem Coworking Space für den ÜK M223 geschrieben in Java mit dem Framework [Quarkus](https://quarkus.io/).
 
 ## Aufsetzen
 Um am Projekt entwicklen zu können, sind folgende Tools notwendig:
@@ -22,14 +22,13 @@ Das Programm ist nun unter ```localhost:8080``` erreichbar. Es öffnet sich auch
 
 ## Testdaten
 Die Testdaten werden beim Start im Entwicklungsmodus geladen und sind in der Klasse *TestDataService* definiert.
-Vorher werden auch alle Daten gelöscht.
-Es wird ein Admin, zwei Mitglieder und ein paar Buchungen erstellt, welche diesen beiden Mitgliedern gehören.
+Vorher werden auch alle Daten gelöscht. Für die Tests gibt es eine eigene solche Klasse. Für jeden Test wird diese Klasse aufgerufen und die Testdaten neu generiert.
 
 ## Änderungen gegenüber der Planung
 * Der Endpunkt /bookings/cancel/{id} kann den Status FORBIDDEN werfen, wenn dem angemeldeten User die ausgewählte Buchung nicht gehört.
-* Im Enum *Role* gibt es den Wert VISITOR nicht mehr.
+* Im Enum *Role* gibt es den Wert VISITOR nicht mehr, da man als registrierter User automatisch mindestens MEMBER sein muss.
 
 ## Hinweise
-* Das Salt für den Passwort-Hash ist aus Einfachheitsgründen für jeden User gleich und hardcoded.
+* Das Pepper für den Passwort-Hash ist aus Einfachheitsgründen für jeden User gleich und hardcoded.
 
 © Norwin Schäfer

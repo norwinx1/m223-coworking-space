@@ -16,11 +16,11 @@ import org.apache.commons.codec.binary.Hex;
 @ApplicationScoped
 public class PasswordService {
     public String hashPassword(String password) {
-        String salt = "0923lkynsdgl0293m,.äpo7blksd";
+        String pepper = "0923lkynsdgl0293m,.äpo7blksd";
         int iterations = 10000;
         int keyLength = 512;
         char[] passwordChars = password.toCharArray();
-        byte[] saltBytes = salt.getBytes();
+        byte[] saltBytes = pepper.getBytes();
 
         byte[] hashedBytes = hash(passwordChars, saltBytes, iterations, keyLength);
         return Hex.encodeHexString(hashedBytes);

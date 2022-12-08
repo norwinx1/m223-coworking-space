@@ -8,6 +8,8 @@ import javax.ws.rs.ext.Provider;
 
 import ch.zli.m223.domain.model.ApiError;
 
+// According to https://docs.jboss.org/resteasy/docs/3.15.1.Final/userguide/html/ExceptionHandling.html
+
 @Provider
 public class BadRequestExceptionMapper implements ExceptionMapper<BadRequestException> {
     @Override
