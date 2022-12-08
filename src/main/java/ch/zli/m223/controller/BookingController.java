@@ -18,21 +18,20 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import ch.zli.m223.domain.entity.ApplicationUser;
 import ch.zli.m223.domain.entity.Booking;
 import ch.zli.m223.domain.entity.BookingDuration;
-import ch.zli.m223.domain.entity.Role;
 import ch.zli.m223.domain.entity.State;
 import ch.zli.m223.domain.exception.ConflictException;
 import ch.zli.m223.service.ApplicationUserService;
 import ch.zli.m223.service.BookingService;
+import ch.zli.m223.service.SessionService;
 
 @Path("/bookings")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -41,13 +40,13 @@ import ch.zli.m223.service.BookingService;
 @RolesAllowed({ "ADMIN", "MEMBER" })
 public class BookingController {
     @Inject
-    JsonWebToken jwt;
-
-    @Inject
     BookingService bookingsService;
 
     @Inject
     ApplicationUserService applicationUserService;
+
+    @Inject
+    SessionService sessionService;
 
     @POST
     @Operation(summary = "Create a booking", description = "Create a booking. If date/duration is already booked the creation is automatically denied.")
@@ -118,15 +117,10 @@ public class BookingController {
             @APIResponse(responseCode = "403", description = "Not a booking of the logged in user.")
     })
     public Response getState(@PathParam("id") Long id) throws ForbiddenException {
-        Booking booking = bookingsService.find(id);
-        if (booking != null) {
-            if (isAdmin() || booking.getApplicationUser().equals(getUser())) {
-                return Response.status(200).entity(booking.getState()).build();
-            } else {
-                throw new ForbiddenException("Forbidden");
-            }
-        } else {
-            return Response.status(204).build();
+        try {
+            return statusWithEntity(Status.OK, bookingsService.getState(id));
+        } catch (BadRequestException e) {
+            return status(Status.NO_CONTENT);
         }
     }
 
@@ -143,7 +137,7 @@ public class BookingController {
     @RolesAllowed({ "ADMIN" })
     public Response acceptBooking(@PathParam("id") Long id) throws BadRequestException {
         bookingsService.setState(id, State.ACCEPTED);
-        return Response.status(200).build();
+        return status(Status.OK);
     }
 
     @POST
@@ -159,7 +153,7 @@ public class BookingController {
     @RolesAllowed({ "ADMIN" })
     public Response denyBooking(@PathParam("id") Long id) throws BadRequestException {
         bookingsService.setState(id, State.DENIED);
-        return Response.status(200).build();
+        return status(Status.OK);
     }
 
     @POST
@@ -173,17 +167,8 @@ public class BookingController {
             @APIResponse(responseCode = "403", description = "Not a booking of the logged in user.")
     })
     public Response cancelBooking(@PathParam("id") Long id) throws BadRequestException, ForbiddenException {
-        Booking booking = bookingsService.find(id);
-        if (booking != null) {
-            if (isAdmin() || booking.getApplicationUser().equals(getUser())) {
-                bookingsService.setState(id, State.CANCELED);
-                return Response.status(200).build();
-            } else {
-                throw new ForbiddenException("Forbidden");
-            }
-        } else {
-            throw new BadRequestException("No booking with this id");
-        }
+        bookingsService.setState(id, State.CANCELED);
+        return status(Status.OK);
     }
 
     @GET
@@ -199,14 +184,14 @@ public class BookingController {
     }
 
     private void setUser(Booking booking) {
-        booking.setApplicationUser(getUser());
+        booking.setApplicationUser(sessionService.getUser());
     }
 
-    private ApplicationUser getUser() {
-        return applicationUserService.findByEmail(jwt.getClaim("upn")).get();
+    private Response status(Status status) {
+        return Response.status(status).build();
     }
 
-    private boolean isAdmin() {
-        return jwt.getGroups().contains(Role.ADMIN.name());
+    private Response statusWithEntity(Status status, Object entity) {
+        return Response.status(status).entity(entity).build();
     }
 }

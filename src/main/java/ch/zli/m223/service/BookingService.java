@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 
 import ch.zli.m223.domain.entity.Booking;
 import ch.zli.m223.domain.entity.BookingDuration;
@@ -19,6 +20,9 @@ import ch.zli.m223.domain.exception.ConflictException;
 
 @ApplicationScoped
 public class BookingService {
+    @Inject
+    SessionService sessionService;
+
     @Inject
     private EntityManager entityManager;
 
@@ -139,13 +143,34 @@ public class BookingService {
     public void setState(Long id, State state) {
         Booking booking = find(id);
         if (booking != null) {
-            if (booking.getState().equals(State.CANCELED)) {
-                throw new BadRequestException("Booking has already been canceled");
+            if (sessionService.isAdmin() || bookingBelongsToUser(booking)) {
+                if (booking.getState().equals(State.CANCELED)) {
+                    throw new BadRequestException("Booking has already been canceled");
+                }
+                booking.setState(state);
+                merge(booking);
+            } else {
+                throw new ForbiddenException("Forbidden");
             }
-            booking.setState(state);
-            merge(booking);
         } else {
             throw new BadRequestException("No booking with this id");
         }
+    }
+
+    public State getState(Long id) {
+        Booking booking = find(id);
+        if (booking != null) {
+            if (sessionService.isAdmin() || bookingBelongsToUser(booking)) {
+                return booking.getState();
+            } else {
+                throw new ForbiddenException("Forbidden");
+            }
+        } else {
+            throw new BadRequestException("No booking with this id");
+        }
+    }
+
+    private boolean bookingBelongsToUser(Booking booking) {
+        return booking.getApplicationUser().equals(sessionService.getUser());
     }
 }

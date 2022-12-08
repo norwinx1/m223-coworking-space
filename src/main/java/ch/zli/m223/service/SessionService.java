@@ -8,7 +8,10 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
+
 import ch.zli.m223.domain.entity.ApplicationUser;
+import ch.zli.m223.domain.entity.Role;
 import ch.zli.m223.domain.model.Credentials;
 import io.smallrye.jwt.build.Jwt;
 
@@ -19,6 +22,9 @@ public class SessionService {
 
     @Inject
     PasswordService passwordService;
+
+    @Inject
+    JsonWebToken jwt;
 
     public String checkCredentials(Credentials credentials) throws SecurityException {
         Optional<ApplicationUser> user = userService.findByEmail(credentials.getEmail());
@@ -34,5 +40,13 @@ public class SessionService {
         } else {
             throw new SecurityException("Invalid login data");
         }
+    }
+
+    public ApplicationUser getUser() {
+        return userService.findByEmail(jwt.getClaim("upn")).get();
+    }
+
+    public boolean isAdmin() {
+        return jwt.getGroups().contains(Role.ADMIN.name());
     }
 }
