@@ -18,7 +18,7 @@ Um das Projekt aufzusetzen, sind folgende Schritte notwendig:
 
 ## Starten
 Um das Projekt zu starten, muss der Kommandobefehl 'Quarkus: Debug current quarkus project' ausgeführt werden.
-Das Programm ist nun unter ```localhost:8080``` erreichbar. Es öffnet sich auch ein Terminal bei dem man mit der Eingabe von 'r' die Tests laufen lassen kann.
+Die API ist nun unter ```localhost:8080``` erreichbar. Es öffnet sich auch ein Terminal bei dem man mit der Eingabe von 'r' die Tests laufen lassen kann.
 
 ## Testdaten
 Die Testdaten werden beim Start im Entwicklungsmodus geladen und sind in der Klasse *TestDataService* definiert.

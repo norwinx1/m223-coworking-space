@@ -71,6 +71,8 @@ public class BookingControllerTest {
                                 .statusCode(200);
         }
 
+        // Different tests to check that a booking is not possible on booked dates and
+        // durations
         @Test
         void testCreateEndpointWithUnavailableDateFullday() {
                 Booking booking = new Booking();
