@@ -34,6 +34,11 @@ public class MemberControllerTest {
         void testCreateEndpoint() {
                 given().header("Content-type", "application/json").body(setUser()).when().post("/members").then()
                                 .statusCode(200);
+                given().when().get("/members/" + 4)
+                                .then()
+                                .statusCode(200)
+                                .and()
+                                .body(containsString("max.henry@example.com"));
         }
 
         @Test
@@ -85,7 +90,8 @@ public class MemberControllerTest {
         })
         void testChangeEmailEndpoint() {
                 given().header("Content-type", "application/json").body("test@test.com").when()
-                                .post("members/me/change/email").then().statusCode(200);
+                                .post("members/me/change/email").then().statusCode(200).body(containsString(
+                                                "test@test.com"));
         }
 
         @Test

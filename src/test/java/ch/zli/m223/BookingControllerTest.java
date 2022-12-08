@@ -2,6 +2,7 @@ package ch.zli.m223;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -190,11 +191,27 @@ public class BookingControllerTest {
         }
 
         @Test
+        @TestSecurity(user = "daniel.müller@example.com", roles = { "MEMBER" })
+        @JwtSecurity(claims = {
+                        @Claim(key = "upn", value = "daniel.müller@example.com")
+        })
+        void testGetStateEndpointWithWrongUser() {
+                given().when().get("/bookings/state/" + 3).then()
+                                .statusCode(403);
+        }
+
+        @Test
         void testAcceptEndpoint() {
                 given().when().header("Content-type", "application/json").post("/bookings/accept/" + 1).then()
                                 .statusCode(200);
                 given().when().get("/bookings/state/" + 1).then()
                                 .statusCode(200).and().body(containsString("ACCEPTED"));
+        }
+
+        @Test
+        void testAcceptEndpointWithCanceledBooking() {
+                given().when().header("Content-type", "application/json").post("/bookings/accept/" + 2).then()
+                                .statusCode(400);
         }
 
         @Test
@@ -206,6 +223,12 @@ public class BookingControllerTest {
         }
 
         @Test
+        void testDenyEndpointWithCanceledBooking() {
+                given().when().header("Content-type", "application/json").post("/bookings/deny/" + 2).then()
+                                .statusCode(400);
+        }
+
+        @Test
         void testCancelEndpoint() {
                 given().when().header("Content-type", "application/json").post("/bookings/cancel/" + 1).then()
                                 .statusCode(200);
@@ -214,15 +237,21 @@ public class BookingControllerTest {
         }
 
         @Test
+        void testCancelEndpointWithCanceledBooking() {
+                given().when().header("Content-type", "application/json").post("/bookings/cancel/" + 2).then()
+                                .statusCode(400);
+        }
+
+        @Test
         void testGetAvailableDatesEndpoint() {
                 Map<LocalDate, BookingDuration> dates = new HashMap<>();
                 for (int i = 0; i < 30; i++) {
-                        dates.put(LocalDate.now().plusDays(i), BookingDuration.FULLDAY);
+                        dates.put(LocalDate.of(2022, 12, 1).plusDays(i), BookingDuration.FULLDAY);
                 }
 
                 given().when().get("/bookings/available-dates").then()
                                 .statusCode(200)
-                                .body(containsString(dates.get(LocalDate.now()).toString()));
+                                .body("size()", is(30));
         }
 
 }

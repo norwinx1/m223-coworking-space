@@ -49,12 +49,12 @@ public class BookingController {
     SessionService sessionService;
 
     @POST
-    @Operation(summary = "Create a booking", description = "Create a booking. If date/duration is already booked the creation is automatically denied.")
+    @Operation(summary = "Create a booking", description = "Create a booking. If date and duration is already booked the creation is automatically denied.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully created booking. State is now pending."),
             @APIResponse(responseCode = "400", description = "Invalid data"),
             @APIResponse(responseCode = "401", description = "Unauthorized"),
-            @APIResponse(responseCode = "409", description = "Date/duration is already booked. The booking has been automatically denied.")
+            @APIResponse(responseCode = "409", description = "Date and duration is already booked. The booking has been automatically denied.")
     })
     public Booking createBooking(@Valid Booking booking) throws ConflictException {
         setUser(booking);
@@ -63,14 +63,14 @@ public class BookingController {
 
     @PUT
     @Path("/{id}")
-    @Operation(summary = "Update a booking", description = "Update a booking. If date/duration is already booked the creation is automatically denied.")
+    @Operation(summary = "Update a booking", description = "Update a booking. If date and duration is already booked the creation is automatically denied.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Succesfully updated booking."),
             @APIResponse(responseCode = "400", description = "This booking has already been canceled. No further changes are possible."),
             @APIResponse(responseCode = "400", description = "Invalid data"),
             @APIResponse(responseCode = "401", description = "Unauthorized"),
             @APIResponse(responseCode = "403", description = "Forbidden"),
-            @APIResponse(responseCode = "409", description = "Date/duration is already booked. The booking has been automatically denied."),
+            @APIResponse(responseCode = "409", description = "Date and duration is already booked. The booking has been automatically denied."),
     })
     @RolesAllowed({ "ADMIN" })
     public Booking updateBooking(@PathParam("id") Long id, @Valid Booking booking)
@@ -135,7 +135,7 @@ public class BookingController {
             @APIResponse(responseCode = "403", description = "Forbidden")
     })
     @RolesAllowed({ "ADMIN" })
-    public Response acceptBooking(@PathParam("id") Long id) throws BadRequestException {
+    public Response acceptBooking(@PathParam("id") Long id) throws BadRequestException, ForbiddenException {
         bookingsService.setState(id, State.ACCEPTED);
         return status(Status.OK);
     }
@@ -151,7 +151,7 @@ public class BookingController {
             @APIResponse(responseCode = "403", description = "Forbidden")
     })
     @RolesAllowed({ "ADMIN" })
-    public Response denyBooking(@PathParam("id") Long id) throws BadRequestException {
+    public Response denyBooking(@PathParam("id") Long id) throws BadRequestException, ForbiddenException {
         bookingsService.setState(id, State.DENIED);
         return status(Status.OK);
     }

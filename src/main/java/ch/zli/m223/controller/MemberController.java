@@ -14,7 +14,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -23,6 +22,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import ch.zli.m223.domain.entity.ApplicationUser;
 import ch.zli.m223.domain.exception.ConflictException;
 import ch.zli.m223.service.ApplicationUserService;
+import ch.zli.m223.service.SessionService;
 
 @Path("/members")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -31,7 +31,7 @@ import ch.zli.m223.service.ApplicationUserService;
 @RolesAllowed({ "ADMIN" })
 public class MemberController {
     @Inject
-    JsonWebToken jwt;
+    SessionService sessionService;
 
     @Inject
     ApplicationUserService applicationUserService;
@@ -101,6 +101,6 @@ public class MemberController {
     })
     @RolesAllowed({ "MEMBER" })
     public ApplicationUser changeEmail(@NotBlank String email) throws ConflictException {
-        return applicationUserService.changeEmail(jwt.getClaim("upn"), email);
+        return applicationUserService.changeEmail(sessionService.getUser().getEmail(), email);
     }
 }
